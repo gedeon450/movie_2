@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIGFLIX — Stream. Watch. Feel.</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red: #e50914;
+      --gold: #f5c518;
+      --dark: #080808;
+      --card: #111111;
+      --card2: #161616;
+      --border: #2a2a2a;
+      --text: #f0f0f0;
+      --muted: #888;
+      --commentator: #f5c518;
+      --gradient: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--dark);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ====== SCROLLBAR ====== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: var(--red); border-radius: 3px; }
+
+    /* ====== NAVBAR ====== */
+    .navbar {
+      position: fixed; top: 0; width: 100%; z-index: 9999;
+      background: linear-gradient(180deg, rgba(8,8,8,0.98) 0%, rgba(8,8,8,0.85) 100%);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(229,9,20,0.2);
+      padding: 10px 30px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.2rem;
+      letter-spacing: 3px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none;
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+    .logo:hover { transform: scale(1.04); }
+    .logo-crown { -webkit-text-fill-color: var(--gold); font-size: 1.5rem; }
+
+    .nav-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+    .nav-btn {
+      background: transparent; border: none;
+      color: #ccc; font-family: 'Outfit', sans-serif;
+      font-weight: 600; font-size: 0.85rem;
+      padding: 8px 16px; border-radius: 8px;
+      cursor: pointer; transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .nav-btn:hover, .nav-btn.active { color: white; background: rgba(229,9,20,0.15); }
+
+    .nav-moviebox {
+      background: var(--gradient); border: none;
+      color: white; font-family: 'Outfit', sans-serif;
+      font-weight: 700; font-size: 0.85rem;
+      padding: 8px 20px; border-radius: 30px;
+      cursor: pointer; transition: all 0.3s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .nav-moviebox:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(229,9,20,0.5); color: white; }
+
+    /* ====== PAGES ====== */
+    .page { display: none; padding-top: 70px; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* ====== HERO SLIDESHOW ====== */
+    .hero-slideshow {
+      position: relative; height: 80vh; overflow: hidden;
+      border-radius: 0 0 40px 40px;
+    }
+    .hero-slide {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      opacity: 0; transition: opacity 1.2s ease;
+      display: flex; align-items: flex-end;
+    }
+    .hero-slide.active { opacity: 1; }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(0deg, rgba(8,8,8,1) 0%, rgba(8,8,8,0.5) 50%, rgba(8,8,8,0.15) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      padding: 50px 60px; max-width: 650px;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--red); color: white;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 2px;
+      padding: 4px 14px; border-radius: 30px; margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      line-height: 1; letter-spacing: 2px;
+      margin-bottom: 14px;
+    }
+    .hero-desc {
+      color: #ccc; font-size: 1rem; line-height: 1.6;
+      margin-bottom: 24px; max-width: 480px;
+    }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    .btn-watch {
+      background: var(--gradient); border: none; color: white;
+      font-family: 'Outfit', sans-serif; font-weight: 700;
+      font-size: 1rem; padding: 12px 32px; border-radius: 50px;
+      cursor: pointer; transition: all 0.3s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-watch:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(229,9,20,0.6); }
+
+    .btn-info {
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+      color: white; font-family: 'Outfit', sans-serif; font-weight: 600;
+      font-size: 1rem; padding: 12px 28px; border-radius: 50px;
+      cursor: pointer; transition: all 0.3s;
+      backdrop-filter: blur(5px);
+    }
+    .btn-info:hover { background: rgba(255,255,255,0.2); }
+
+    /* Hero indicators */
+    .hero-dots {
+      position: absolute; bottom: 28px; right: 60px; z-index: 10;
+      display: flex; gap: 8px;
+    }
+    .hero-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.35); cursor: pointer;
+      transition: all 0.3s;
+    }
+    .hero-dot.active { background: var(--red); width: 24px; border-radius: 4px; }
+
+    /* Hero side arrows */
+    .hero-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      z-index: 10; background: rgba(0,0,0,0.5); border: none;
+      color: white; width: 48px; height: 48px; border-radius: 50%;
+      font-size: 1.2rem; cursor: pointer; transition: all 0.3s;
+    }
+    .hero-arrow:hover { background: var(--red); }
+    .hero-prev { left: 20px; }
+    .hero-next { right: 20px; }
+
+    /* ====== MODE TOGGLE (Regular / Commentator) ====== */
+    .mode-toggle-bar {
+      padding: 25px 40px 10px;
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    }
+    .mode-label {
+      font-size: 0.85rem; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 1px; font-weight: 600;
+    }
+    .mode-toggle {
+      display: flex; background: var(--card); border: 1px solid var(--border);
+      border-radius: 50px; padding: 4px; gap: 4px;
+    }
+    .mode-opt {
+      padding: 8px 22px; border-radius: 50px; cursor: pointer;
+      font-weight: 700; font-size: 0.9rem; transition: all 0.3s;
+      color: var(--muted); border: none; background: transparent;
+      font-family: 'Outfit', sans-serif;
+    }
+    .mode-opt.active {
+      background: var(--red); color: white;
+      box-shadow: 0 0 12px rgba(229,9,20,0.5);
+    }
+    .mode-opt.commentator.active {
+      background: var(--gold); color: #111;
+      box-shadow: 0 0 12px rgba(245,197,24,0.5);
+    }
+
+    /* ====== COMMENTATOR SELECTOR ====== */
+    .commentator-bar {
+      padding: 10px 40px 20px;
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    }
+    .comm-label { font-size: 0.8rem; color: var(--muted); letter-spacing: 1px; font-weight: 600; text-transform: uppercase; }
+    .comm-btn {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Outfit', sans-serif;
+      font-weight: 700; font-size: 0.85rem;
+      padding: 8px 20px; border-radius: 50px; cursor: pointer;
+      transition: all 0.3s; display: flex; align-items: center; gap: 8px;
+    }
+    .comm-btn:hover { border-color: var(--gold); }
+    .comm-btn.active {
+      background: var(--gold); color: #111; border-color: var(--gold);
+      box-shadow: 0 0 15px rgba(245,197,24,0.4);
+    }
+    .comm-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--border); object-fit: cover;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    /* ====== CATEGORY BUTTONS ====== */
+    .cat-bar {
+      padding: 10px 40px 20px;
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .cat-chip {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Outfit', sans-serif;
+      font-weight: 600; font-size: 0.85rem;
+      padding: 8px 20px; border-radius: 50px; cursor: pointer;
+      transition: all 0.3s;
+    }
+    .cat-chip:hover { border-color: var(--red); }
+    .cat-chip.active { background: var(--red); border-color: var(--red); color: white; }
+
+    /* ====== SECTION HEADERS ====== */
+    .section-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 30px 40px 16px;
+    }
+    .section-hd h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem; letter-spacing: 2px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-hd h3 span { color: var(--red); }
+    .see-all {
+      color: var(--red); font-weight: 600; font-size: 0.85rem;
+      text-decoration: none; letter-spacing: 0.5px;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .see-all:hover { opacity: 0.7; }
+
+    /* ====== MOVIE GRID ====== */
+    .movie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 18px; padding: 0 40px 30px;
+    }
+
+    .movie-card {
+      background: var(--card); border-radius: 14px; overflow: hidden;
+      cursor: pointer; transition: all 0.35s ease;
+      border: 1px solid var(--border); position: relative;
+    }
+    .movie-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--red);
+      box-shadow: 0 20px 40px rgba(229,9,20,0.3);
+    }
+    .movie-card.commentator-card { border-color: rgba(245,197,24,0.3); }
+    .movie-card.commentator-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 20px 40px rgba(245,197,24,0.25);
+    }
+
+    .movie-poster {
+      width: 100%; height: 255px; object-fit: cover;
+      display: block; background: #1a1a1a;
+    }
+
+    .comm-tag {
+      position: absolute; top: 10px; left: 10px;
+      background: var(--gold); color: #111;
+      font-size: 0.62rem; font-weight: 800; padding: 3px 10px;
+      border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .new-tag {
+      position: absolute; top: 10px; right: 10px;
+      background: var(--red); color: white;
+      font-size: 0.62rem; font-weight: 800; padding: 3px 10px;
+      border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+
+    .movie-info { padding: 12px; }
+    .movie-title {
+      font-weight: 700; font-size: 0.88rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .movie-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 4px;
+    }
+    .movie-year { color: var(--muted); font-size: 0.72rem; }
+    .movie-rating { color: var(--gold); font-size: 0.72rem; font-weight: 700; }
+
+    .watch-btn {
+      width: 100%; background: var(--gradient); border: none;
+      color: white; font-family: 'Outfit', sans-serif;
+      font-weight: 700; font-size: 0.75rem; padding: 8px;
+      border-radius: 8px; margin-top: 10px; cursor: pointer;
+      transition: all 0.2s; letter-spacing: 0.5px;
+    }
+    .watch-btn:hover { opacity: 0.85; }
+    .watch-btn.comm-btn-watch {
+      background: linear-gradient(135deg, #f5c518, #d4a500);
+      color: #111;
+    }
+
+    /* ====== MANAHAFILM SECTION ====== */
+    .manahafilm-section {
+      margin: 10px 40px 40px;
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: 24px; overflow: hidden;
+      background: linear-gradient(135deg, #111 0%, #0e0c08 100%);
+    }
+    .manahafilm-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 24px 30px 16px;
+      background: linear-gradient(135deg, rgba(245,197,24,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid rgba(245,197,24,0.15);
+    }
+    .manahafilm-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; letter-spacing: 3px;
+      color: var(--gold);
+    }
+    .manahafilm-sub { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+    /* ====== ADMIN PANEL ====== */
+    #adminPage .admin-wrap {
+      max-width: 900px; margin: 0 auto; padding: 40px 30px;
+    }
+    .admin-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem; letter-spacing: 3px; color: var(--red);
+      margin-bottom: 8px;
+    }
+
+    .admin-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 30px; margin-bottom: 24px;
+    }
+    .admin-card h4 {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
+      letter-spacing: 2px; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px; color: var(--gold);
+    }
+
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+    .form-control {
+      width: 100%; background: #0d0d0d; border: 1px solid var(--border);
+      color: white; font-family: 'Outfit', sans-serif; font-size: 0.9rem;
+      padding: 10px 16px; border-radius: 10px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus { border-color: var(--red); }
+    .form-select { appearance: auto; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    .submit-btn {
+      background: var(--gradient); border: none; color: white;
+      font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem;
+      padding: 12px 32px; border-radius: 50px; cursor: pointer;
+      transition: all 0.3s; display: flex; align-items: center; gap: 8px;
+    }
+    .submit-btn:hover { transform: scale(1.03); box-shadow: 0 0 20px rgba(229,9,20,0.5); }
+
+    .poster-preview {
+      width: 120px; height: 180px; border-radius: 10px;
+      background: var(--border); object-fit: cover;
+      display: block; margin-top: 10px; border: 1px solid var(--border);
+    }
+
+    /* Admin film list */
+    .admin-film-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px; border-radius: 12px;
+      border: 1px solid var(--border); margin-bottom: 10px;
+      background: #0d0d0d;
+    }
+    .admin-film-poster {
+      width: 45px; height: 65px; border-radius: 6px; object-fit: cover;
+    }
+    .admin-film-info { flex: 1; }
+    .admin-film-title { font-weight: 700; font-size: 0.9rem; }
+    .admin-film-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .delete-btn {
+      background: rgba(229,9,20,0.15); border: 1px solid rgba(229,9,20,0.3);
+      color: var(--red); padding: 6px 14px; border-radius: 8px;
+      cursor: pointer; font-size: 0.8rem; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .delete-btn:hover { background: var(--red); color: white; }
+
+    /* ====== MOVIEBOX LIVE SECTION ====== */
+    .moviebox-section {
+      margin: 10px 40px 40px;
+      border: 1px solid rgba(229,9,20,0.2);
+      border-radius: 24px; overflow: hidden;
+    }
+    .moviebox-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 30px;
+      background: linear-gradient(135deg, rgba(229,9,20,0.1) 0%, transparent 100%);
+      border-bottom: 1px solid rgba(229,9,20,0.15);
+    }
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(229,9,20,0.2); border: 1px solid rgba(229,9,20,0.4);
+      color: var(--red); font-size: 0.75rem; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px; letter-spacing: 1px;
+    }
+    .live-dot {
+      width: 7px; height: 7px; background: var(--red);
+      border-radius: 50%; animation: livePulse 1.2s infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+    .moviebox-scroll {
+      display: flex; gap: 16px; padding: 20px 30px;
+      overflow-x: auto; scrollbar-width: thin;
+    }
+    .moviebox-item {
+      flex-shrink: 0; width: 150px; cursor: pointer;
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border); transition: all 0.3s;
+      background: var(--card);
+    }
+    .moviebox-item:hover { transform: translateY(-5px); border-color: var(--red); }
+    .moviebox-item img { width: 100%; height: 220px; object-fit: cover; }
+    .moviebox-item-info { padding: 8px 10px; }
+    .moviebox-item-title { font-size: 0.78rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .moviebox-item-year { font-size: 0.68rem; color: var(--muted); }
+
+    /* ====== ABOUT PAGE ====== */
+    .about-hero {
+      text-align: center; padding: 60px 30px 40px;
+    }
+    .about-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5rem; letter-spacing: 6px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .contact-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px; padding: 0 40px 40px;
+    }
+    .contact-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 30px; text-align: center;
+      transition: all 0.3s;
+    }
+    .contact-card:hover { border-color: var(--red); transform: translateY(-4px); }
+    .contact-card i { font-size: 2.5rem; color: var(--red); margin-bottom: 14px; display: block; }
+    .contact-card h5 { font-weight: 700; margin-bottom: 6px; }
+    .contact-link {
+      display: inline-block; margin-top: 12px;
+      background: transparent; border: 1px solid var(--red);
+      color: var(--red); padding: 7px 20px; border-radius: 30px;
+      font-size: 0.82rem; font-weight: 600; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .contact-link:hover { background: var(--red); color: white; }
+
+    /* ====== FOOTER ====== */
+    footer {
+      text-align: center; padding: 30px;
+      border-top: 1px solid var(--border);
+      color: var(--muted); font-size: 0.85rem;
+    }
+
+    /* ====== MODAL (trailer viewer) ====== */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 99999;
+      background: rgba(0,0,0,0.92); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--card); border-radius: 20px; overflow: hidden;
+      width: 90%; max-width: 800px; position: relative;
+      border: 1px solid var(--border);
+    }
+    .modal-close {
+      position: absolute; top: 14px; right: 14px; z-index: 10;
+      background: rgba(229,9,20,0.8); border: none; color: white;
+      width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+      font-size: 1.1rem; transition: all 0.2s;
+    }
+    .modal-close:hover { background: var(--red); transform: scale(1.1); }
+    .modal-iframe-wrap { position: relative; padding-bottom: 56.25%; }
+    .modal-iframe-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    .modal-title { padding: 16px 20px; font-weight: 700; font-size: 1.1rem; }
+
+    /* ====== NOTIFICATION TOAST ====== */
+    .toast {
+      position: fixed; bottom: 30px; right: 30px; z-index: 99999;
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 22px;
+      font-weight: 600; font-size: 0.9rem;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.4s ease;
+      max-width: 300px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: #22c55e; color: #22c55e; }
+    .toast.error { border-color: var(--red); color: var(--red); }
+
+    /* ====== RESPONSIVE ====== */
+    @media (max-width: 768px) {
+      .navbar { padding: 10px 16px; }
+      .hero-content { padding: 30px 24px; }
+      .hero-slideshow { height: 65vh; }
+      .movie-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); padding: 0 16px 24px; gap: 14px; }
+      .movie-poster { height: 210px; }
+      .section-hd, .cat-bar, .mode-toggle-bar, .commentator-bar { padding-left: 16px; padding-right: 16px; }
+      .manahafilm-section, .moviebox-section { margin-left: 16px; margin-right: 16px; }
+      .contact-grid { padding: 0 16px 30px; }
+      .admin-wrap { padding: 24px 16px; }
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ====== NAVBAR ====== -->
+<nav class="navbar">
+  <a class="logo" onclick="showPage('home')">
+    <span class="logo-crown"><i class="fas fa-crown"></i></span>
+    BIG<span style="-webkit-text-fill-color:var(--gold);">FLIX</span>
+  </a>
+  <div class="nav-links">
+    <button class="nav-btn active" id="navHome" onclick="showPage('home')">🏠 HOME</button>
+    <button class="nav-btn" id="navCategories" onclick="showPage('categories')">🎬 FILMS</button>
+    <button class="nav-btn" id="navManahafilm" onclick="showPage('manahafilm')">🎥 MANAHAFILM</button>
+    <button class="nav-btn" id="navAdmin" onclick="showPage('admin')">⚙️ MANAGE</button>
+    <button class="nav-btn" id="navAbout" onclick="showPage('about')">ℹ️ ABOUT</button>
+    <a href="https://moviebox.com" target="_blank" class="nav-moviebox"><i class="fas fa-ticket-alt"></i> Movie Box</a>
+  </div>
+</nav>
+
+<!-- ====== HOME PAGE ====== -->
+<div id="homePage" class="page active">
+  <!-- Hero Slideshow -->
+  <div class="hero-slideshow" id="heroSlideshow">
+    <!-- Slides injected by JS -->
+    <button class="hero-arrow hero-prev" onclick="heroSlide(-1)"><i class="fas fa-chevron-left"></i></button>
+    <button class="hero-arrow hero-next" onclick="heroSlide(1)"><i class="fas fa-chevron-right"></i></button>
+    <div class="hero-dots" id="heroDots"></div>
+  </div>
+
+  <!-- Mode Toggle -->
+  <div class="mode-toggle-bar">
+    <span class="mode-label">View Mode:</span>
+    <div class="mode-toggle">
+      <button class="mode-opt active" id="modeRegular" onclick="setMode('regular')">🎬 Regular Films</button>
+      <button class="mode-opt commentator" id="modeCommentator" onclick="setMode('commentator')">🎙️ Commentators</button>
+    </div>
+  </div>
+
+  <!-- Commentator selector (hidden by default) -->
+  <div class="commentator-bar" id="commentatorBar" style="display:none;">
+    <span class="comm-label">Commentator:</span>
+    <button class="comm-btn active" onclick="selectCommentator('all')"><span class="comm-avatar">🎙️</span> All</button>
+    <button class="comm-btn" onclick="selectCommentator('rocky')"><span class="comm-avatar">🥊</span> Rocky</button>
+    <button class="comm-btn" onclick="selectCommentator('savimbi')"><span class="comm-avatar">🦁</span> Savimbi</button>
+    <button class="comm-btn" onclick="selectCommentator('fey')"><span class="comm-avatar">🌟</span> Fey</button>
+    <button class="comm-btn" onclick="selectCommentator('giti')"><span class="comm-avatar">🎭</span> Giti</button>
+    <button class="comm-btn" onclick="selectCommentator('sankaragahza')"><span class="comm-avatar">🏆</span> Sankaragahza</button>
+  </div>
+
+  <!-- Trending -->
+  <div class="section-hd">
+    <h3><span>🔥</span> TRENDING NOW</h3>
+    <a class="see-all" onclick="showPage('categories')">See All →</a>
+  </div>
+  <div class="movie-grid" id="homeGrid"></div>
+
+  <!-- MovieBox Live Section -->
+  <div class="moviebox-section">
+    <div class="moviebox-header">
+      <div>
+        <h4 style="font-family:'Bebas Neue';font-size:1.5rem;letter-spacing:2px;margin:0;">FROM MOVIE BOX</h4>
+        <p style="color:var(--muted);font-size:0.82rem;margin:4px 0 0;">Live picks from Movie Box platform</p>
+      </div>
+      <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+    </div>
+    <div class="moviebox-scroll" id="movieboxScroll"></div>
+  </div>
+</div>
+
+<!-- ====== CATEGORIES PAGE ====== -->
+<div id="categoriesPage" class="page">
+  <div class="section-hd" style="padding-top:30px;">
+    <h3><span>🎬</span> BROWSE FILMS</h3>
+  </div>
+
+  <!-- Mode Toggle -->
+  <div class="mode-toggle-bar">
+    <span class="mode-label">View Mode:</span>
+    <div class="mode-toggle">
+      <button class="mode-opt active" id="catModeRegular" onclick="setCatMode('regular')">🎬 Regular Films</button>
+      <button class="mode-opt commentator" id="catModeCommentator" onclick="setCatMode('commentator')">🎙️ Commentators</button>
+    </div>
+  </div>
+
+  <!-- Commentator selector for categories page -->
+  <div class="commentator-bar" id="catCommentatorBar" style="display:none;">
+    <span class="comm-label">Commentator:</span>
+    <button class="comm-btn active" onclick="selectCatCommentator('all')"><span class="comm-avatar">🎙️</span> All</button>
+    <button class="comm-btn" onclick="selectCatCommentator('rocky')"><span class="comm-avatar">🥊</span> Rocky</button>
+    <button class="comm-btn" onclick="selectCatCommentator('savimbi')"><span class="comm-avatar">🦁</span> Savimbi</button>
+    <button class="comm-btn" onclick="selectCatCommentator('fey')"><span class="comm-avatar">🌟</span> Fey</button>
+    <button class="comm-btn" onclick="selectCatCommentator('giti')"><span class="comm-avatar">🎭</span> Giti</button>
+    <button class="comm-btn" onclick="selectCatCommentator('sankaragahza')"><span class="comm-avatar">🏆</span> Sankaragahza</button>
+  </div>
+
+  <!-- Category chips -->
+  <div class="cat-bar" id="catBar">
+    <button class="cat-chip active" onclick="selectCat('all')">🎯 All</button>
+    <button class="cat-chip" onclick="selectCat('action')">🔫 Action</button>
+    <button class="cat-chip" onclick="selectCat('comedy')">😂 Comedy</button>
+    <button class="cat-chip" onclick="selectCat('cartoon')">🐉 Cartoon</button>
+    <button class="cat-chip" onclick="selectCat('romance')">💕 Romance</button>
+    <button class="cat-chip" onclick="selectCat('custom')" id="customCatBtn" style="display:none;">⭐ My Films</button>
+  </div>
+
+  <div class="movie-grid" id="catGrid"></div>
+</div>
+
+<!-- ====== MANAHAFILM PAGE ====== -->
+<div id="manahafilmPage" class="page">
+  <div class="manahafilm-section" style="margin-top:30px;">
+    <div class="manahafilm-header">
+      <div>
+        <div class="manahafilm-title">MANAHAFILM</div>
+        <div class="manahafilm-sub">Curated premium collection · Post your favorite films here</div>
+      </div>
+      <button class="submit-btn" onclick="showPage('admin')" style="font-size:0.85rem;padding:10px 20px;">
+        <i class="fas fa-plus"></i> Add Film
+      </button>
+    </div>
+    <div class="movie-grid" id="manahaGrid" style="padding-top:20px;"></div>
+    <div id="manahaEmpty" style="text-align:center;padding:60px;color:var(--muted);display:none;">
+      <i class="fas fa-film" style="font-size:3rem;margin-bottom:16px;display:block;opacity:0.3;"></i>
+      <p>No films added yet. Use the <strong>Manage</strong> tab to post posters and add films.</p>
+    </div>
+  </div>
+
+  <!-- MovieBox Live from Home (repeated) -->
+  <div class="moviebox-section" style="margin-top:0;">
+    <div class="moviebox-header">
+      <div>
+        <h4 style="font-family:'Bebas Neue';font-size:1.5rem;letter-spacing:2px;margin:0;">POPULAR ON MOVIE BOX</h4>
+        <p style="color:var(--muted);font-size:0.82rem;margin:4px 0 0;">Keep watching from Movie Box</p>
+      </div>
+      <a href="https://moviebox.com" target="_blank" class="nav-moviebox" style="font-size:0.82rem;padding:8px 18px;">Open Movie Box ↗</a>
+    </div>
+    <div class="moviebox-scroll" id="manahaMovieboxScroll"></div>
+  </div>
+</div>
+
+<!-- ====== ADMIN / MANAGE PAGE ====== -->
+<div id="adminPage" class="page">
+  <div class="admin-wrap">
+    <div class="admin-title">⚙️ MANAGE FILMS</div>
+    <p style="color:var(--muted);margin-bottom:30px;">Post new films, upload posters, set categories and commentators.</p>
+
+    <!-- Add Film Form -->
+    <div class="admin-card">
+      <h4><i class="fas fa-plus-circle"></i> Add New Film</h4>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Film Title *</label>
+          <input type="text" class="form-control" id="filmTitle" placeholder="e.g. John Wick 4">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year</label>
+          <input type="text" class="form-control" id="filmYear" placeholder="2024">
+        </div>
+      </div>
+
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-control form-select" id="filmCategory">
+            <option value="action">🔫 Action</option>
+            <option value="comedy">😂 Comedy</option>
+            <option value="cartoon">🐉 Cartoon</option>
+            <option value="romance">💕 Romance</option>
+            <option value="custom">⭐ My Films</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rating (0-10)</label>
+          <input type="number" class="form-control" id="filmRating" placeholder="7.5" min="0" max="10" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-control form-select" id="filmType">
+            <option value="regular">🎬 Regular Film</option>
+            <option value="commentator">🎙️ Commentator Film</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Commentator selector (shown when type = commentator) -->
+      <div class="form-group" id="commentatorField" style="display:none;">
+        <label class="form-label">Commentator *</label>
+        <select class="form-control form-select" id="filmCommentator">
+          <option value="rocky">🥊 Rocky</option>
+          <option value="savimbi">🦁 Savimbi</option>
+          <option value="fey">🌟 Fey</option>
+          <option value="giti">🎭 Giti</option>
+          <option value="sankaragahza">🏆 Sankaragahza</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Poster URL *</label>
+          <input type="url" class="form-control" id="filmPoster" placeholder="https://... (image link)" oninput="previewPoster(this.value)">
+          <img id="posterPreview" class="poster-preview" src="" alt="poster preview" style="display:none;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">YouTube Trailer ID</label>
+          <input type="text" class="form-control" id="filmTrailer" placeholder="e.g. qEVUtrk8_B4">
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:4px;">The part after ?v= in the YouTube URL</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" id="filmDesc" rows="2" placeholder="Short description..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Add to Manahafilm Section?</label>
+        <select class="form-control form-select" id="filmManahafilm">
+          <option value="no">No</option>
+          <option value="yes">Yes – Feature in Manahafilm</option>
+        </select>
+      </div>
+
+      <button class="submit-btn" onclick="addFilm()">
+        <i class="fas fa-plus"></i> ADD FILM TO LIBRARY
+      </button>
+    </div>
+
+    <!-- Film Library -->
+    <div class="admin-card">
+      <h4><i class="fas fa-database"></i> FILM LIBRARY (<span id="filmCount">0</span> films)</h4>
+      <div id="adminFilmList">
+        <div style="text-align:center;padding:30px;color:var(--muted);">No custom films added yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== ABOUT PAGE ====== -->
+<div id="aboutPage" class="page">
+  <div class="about-hero">
+    <div class="about-logo">BIGFLIX</div>
+    <p style="color:var(--muted);font-size:1rem;max-width:500px;margin:0 auto 20px;">Your ultimate destination for movie trailers, commentaries and exclusive film picks.</p>
+    <a href="https://moviebox.com" target="_blank" class="nav-moviebox" style="font-size:1rem;padding:12px 36px;display:inline-block;">
+      <i class="fas fa-ticket-alt"></i> Watch Full Movies on Movie Box
+    </a>
+  </div>
+
+  <div class="contact-grid">
+    <div class="contact-card">
+      <i class="fab fa-whatsapp"></i>
+      <h5>WhatsApp</h5>
+      <p style="color:var(--muted);font-size:0.9rem;">+250 788 430 590</p>
+      <a href="https://wa.me/250788430590" target="_blank" class="contact-link">Chat Now</a>
+    </div>
+    <div class="contact-card">
+      <i class="fab fa-instagram"></i>
+      <h5>Instagram</h5>
+      <p style="color:var(--muted);font-size:0.9rem;">@b.i.g_edeon</p>
+      <a href="https://instagram.com/b.i.g_edeon" target="_blank" class="contact-link">Follow</a>
+    </div>
+    <div class="contact-card">
+      <i class="fas fa-envelope"></i>
+      <h5>Email</h5>
+      <p style="color:var(--muted);font-size:0.85rem;">bahundeishimwegedeon@gmail.com</p>
+      <a href="mailto:bahundeishimwegedeon@gmail.com" class="contact-link">Send Email</a>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:20px 30px 40px;">
+    <p style="color:var(--muted);font-size:0.85rem;">© 2026 BIGFLIX — All trailers link to official YouTube videos. Full movies available on Movie Box.</p>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <p>🎬 <strong>BIGFLIX</strong> — Stream. Watch. Feel. | <a href="https://moviebox.com" target="_blank" style="color:var(--red);">Movie Box</a></p>
+</footer>
+
+<!-- ====== TRAILER MODAL ====== -->
+<div class="modal-overlay" id="trailerModal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeTrailer()"><i class="fas fa-times"></i></button>
+    <div class="modal-iframe-wrap">
+      <iframe id="trailerFrame" src="" allowfullscreen allow="autoplay"></iframe>
+    </div>
+    <div class="modal-title" id="trailerTitle"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ==================== FILM DATABASE ====================
+
+const ACTION_MOVIES = [
+  { id:'a1', title:"John Wick: Chapter 4", year:"2023", rating:8.2, poster:"https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg", trailer:"qEVUtrk8_B4", type:"regular", category:"action" },
+  { id:'a2', title:"Mission: Impossible 7", year:"2023", rating:8.0, poster:"https://image.tmdb.org/t/p/w500/NNxYkU70HPurnNCSiCjYAmacwm.jpg", trailer:"2m1drlOZSDw", type:"regular", category:"action" },
+  { id:'a3', title:"The Equalizer 3", year:"2023", rating:7.5, poster:"https://image.tmdb.org/t/p/w500/b0Ej6fnXAP8fK75h6iCVRbA9Sgp.jpg", trailer:"19ikl8vy4zs", type:"regular", category:"action" },
+  { id:'a4', title:"Fast X", year:"2023", rating:7.2, poster:"https://image.tmdb.org/t/p/w500/fiVW06jE7z9YnO4trhaMEdclSiC.jpg", trailer:"32RAq6JzY-w", type:"regular", category:"action" },
+  { id:'a5', title:"Extraction 2", year:"2023", rating:7.8, poster:"https://image.tmdb.org/t/p/w500/7gKI9fpEMaKCQ1OpKGh7AfWMCiZ.jpg", trailer:"Y274jBs5skc", type:"regular", category:"action" },
+  { id:'a6', title:"The Killer", year:"2023", rating:7.4, poster:"https://image.tmdb.org/t/p/w500/4OZv1VOyA9wIZC9tBfCSXAtYKuY.jpg", trailer:"S3Gd3sF9d60", type:"regular", category:"action" },
+  { id:'a7', title:"Rebel Moon", year:"2023", rating:6.8, poster:"https://image.tmdb.org/t/p/w500/utPZQjVZ2yqQXYzyBpZgC4jFpNq.jpg", trailer:"fhr3MzT6exg", type:"regular", category:"action" },
+  { id:'a8', title:"The Beekeeper", year:"2024", rating:7.1, poster:"https://image.tmdb.org/t/p/w500/A7EByudXz0sO4jE6hHpZmDv0Z6z.jpg", trailer:"SzS8Ao0H6Co", type:"regular", category:"action" },
+  { id:'a9', title:"Furiosa", year:"2024", rating:7.9, poster:"https://image.tmdb.org/t/p/w500/iADOJ8Zymht2JPMUV3IOE2Z5L4m.jpg", trailer:"XJMuhwVlcaM", type:"regular", category:"action" },
+  { id:'a10', title:"The Fall Guy", year:"2024", rating:7.5, poster:"https://image.tmdb.org/t/p/w500/tSz1qsmSrov6KbxhLdOQY4T2iQk.jpg", trailer:"j7jPnMgVG9o", type:"regular", category:"action" },
+];
+
+const COMEDY_MOVIES = [
+  { id:'c1', title:"Barbie", year:"2023", rating:7.8, poster:"https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg", trailer:"pBk4NYhWNMM", type:"regular", category:"comedy" },
+  { id:'c2', title:"The Super Mario Bros Movie", year:"2023", rating:7.6, poster:"https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg", trailer:"TnGl01FkMMo", type:"regular", category:"comedy" },
+  { id:'c3', title:"No Hard Feelings", year:"2023", rating:7.0, poster:"https://image.tmdb.org/t/p/w500/rXRtDJQJuN53TPAB3oFePpBgkwT.jpg", trailer:"vqL1Yw1y0Q0", type:"regular", category:"comedy" },
+  { id:'c4', title:"The Holdovers", year:"2023", rating:8.1, poster:"https://image.tmdb.org/t/p/w500/VHmNnbWXn6RCxFG5EXBhPlOsD.jpg", trailer:"AhKMkM7xjAs", type:"regular", category:"comedy" },
+  { id:'c5', title:"Wonka", year:"2023", rating:7.5, poster:"https://image.tmdb.org/t/p/w500/qhb1qOilapbapxWQn9jtRCMh8bx.jpg", trailer:"otNh9bTjCw4", type:"regular", category:"comedy" },
+  { id:'c6', title:"Anyone But You", year:"2023", rating:7.1, poster:"https://image.tmdb.org/t/p/w500/lurEK87kukWNaHd0zYnsi3yzJrs.jpg", trailer:"w7eFf0KqQ9A", type:"regular", category:"comedy" },
+];
+
+const CARTOON_MOVIES = [
+  { id:'t1', title:"Spider-Man: Across the Spider-Verse", year:"2023", rating:8.7, poster:"https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg", trailer:"shW9i6k8cB0", type:"regular", category:"cartoon" },
+  { id:'t2', title:"Elemental", year:"2023", rating:7.5, poster:"https://image.tmdb.org/t/p/w500/4Y1WNm4Y1WNm4Y1WNm4Y1WNm4Y1.jpg", trailer:"hXzcyx9V0xw", type:"regular", category:"cartoon" },
+  { id:'t3', title:"Kung Fu Panda 4", year:"2024", rating:7.6, poster:"https://image.tmdb.org/t/p/w500/kDp1vQn9nX8zP8vZ8Y8c8Z8c8Z.jpg", trailer:"_inKs4eeHiI", type:"regular", category:"cartoon" },
+  { id:'t4', title:"Inside Out 2", year:"2024", rating:8.1, poster:"https://image.tmdb.org/t/p/w500/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg", trailer:"LEJHMT6Q0AY", type:"regular", category:"cartoon" },
+  { id:'t5', title:"The Wild Robot", year:"2024", rating:8.2, poster:"https://image.tmdb.org/t/p/w500/wTnV0BYDlf4lxOdYMnkVIBqFYhX.jpg", trailer:"9aBFhkRNFT8", type:"regular", category:"cartoon" },
+  { id:'t6', title:"The Boy and the Heron", year:"2023", rating:8.0, poster:"https://image.tmdb.org/t/p/w500/f9Zx45JsI5k0bkGMFXaT0bxrniM.jpg", trailer:"E8fRCxgB6-k", type:"regular", category:"cartoon" },
+];
+
+const ROMANCE_MOVIES = [
+  { id:'r1', title:"Anyone But You", year:"2023", rating:7.1, poster:"https://image.tmdb.org/t/p/w500/lurEK87kukWNaHd0zYnsi3yzJrs.jpg", trailer:"w7eFf0KqQ9A", type:"regular", category:"romance" },
+  { id:'r2', title:"Past Lives", year:"2023", rating:8.0, poster:"https://image.tmdb.org/t/p/w500/k3waqVXSnHiB5q0MKMFmNhBwQhV.jpg", trailer:"OMp2OKXx1EM", type:"regular", category:"romance" },
+  { id:'r3', title:"The Little Mermaid", year:"2023", rating:7.2, poster:"https://image.tmdb.org/t/p/w500/ym1dxyOk4jFcSl4Q2zmRrA5BEEN.jpg", trailer:"w9YzjG3fVZQ", type:"regular", category:"romance" },
+  { id:'r4', title:"All of Us Strangers", year:"2023", rating:7.9, poster:"https://image.tmdb.org/t/p/w500/jiBOZFUB51lRxZn4cL5TnUL3bLf.jpg", trailer:"lT3J6r6f6rE", type:"regular", category:"romance" },
+  { id:'r5', title:"Poor Things", year:"2023", rating:8.0, poster:"https://image.tmdb.org/t/p/w500/kCGlIMHnOm8JPXIf7LTAATB4T7X.jpg", trailer:"RlbR5RlbR5R", type:"regular", category:"romance" },
+  { id:'r6', title:"The Color Purple", year:"2023", rating:7.5, poster:"https://image.tmdb.org/t/p/w500/at3LDSqz7Y0lHCdXOpzR1J0Vz3l.jpg", trailer:"7N7H4O9Vv1E", type:"regular", category:"romance" },
+];
+
+// Commentator films (sample set)
+const COMMENTATOR_FILMS = [
+  { id:'cm1', title:"John Wick 4 (Rocky's Take)", year:"2023", rating:9.0, poster:"https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg", trailer:"qEVUtrk8_B4", type:"commentator", commentator:"rocky", category:"action" },
+  { id:'cm2', title:"Fast X (Savimbi Commentary)", year:"2023", rating:8.5, poster:"https://image.tmdb.org/t/p/w500/fiVW06jE7z9YnO4trhaMEdclSiC.jpg", trailer:"32RAq6JzY-w", type:"commentator", commentator:"savimbi", category:"action" },
+  { id:'cm3', title:"Barbie (Fey Review)", year:"2023", rating:8.8, poster:"https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg", trailer:"pBk4NYhWNMM", type:"commentator", commentator:"fey", category:"comedy" },
+  { id:'cm4', title:"Spider-Verse (Giti's Take)", year:"2023", rating:9.2, poster:"https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg", trailer:"shW9i6k8cB0", type:"commentator", commentator:"giti", category:"cartoon" },
+  { id:'cm5', title:"Past Lives (Sankaragahza)", year:"2023", rating:9.1, poster:"https://image.tmdb.org/t/p/w500/k3waqVXSnHiB5q0MKMFmNhBwQhV.jpg", trailer:"OMp2OKXx1EM", type:"commentator", commentator:"sankaragahza", category:"romance" },
+  { id:'cm6', title:"Furiosa (Rocky Reacts)", year:"2024", rating:8.9, poster:"https://image.tmdb.org/t/p/w500/iADOJ8Zymht2JPMUV3IOE2Z5L4m.jpg", trailer:"XJMuhwVlcaM", type:"commentator", commentator:"rocky", category:"action" },
+  { id:'cm7', title:"Inside Out 2 (Savimbi)", year:"2024", rating:8.6, poster:"https://image.tmdb.org/t/p/w500/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg", trailer:"LEJHMT6Q0AY", type:"commentator", commentator:"savimbi", category:"cartoon" },
+  { id:'cm8', title:"Wonka (Fey Commentary)", year:"2023", rating:8.4, poster:"https://image.tmdb.org/t/p/w500/qhb1qOilapbapxWQn9jtRCMh8bx.jpg", trailer:"otNh9bTjCw4", type:"commentator", commentator:"fey", category:"comedy" },
+];
+
+// MovieBox live films (static simulation with real TMDB posters)
+const MOVIEBOX_FILMS = [
+  { title:"Oppenheimer", year:"2023", poster:"https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg", trailer:"uYPbbksJxIg" },
+  { title:"Dune: Part Two", year:"2024", poster:"https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg", trailer:"Way9Dexny3w" },
+  { title:"Avengers: Secret Wars", year:"2025", poster:"https://image.tmdb.org/t/p/w500/tSz1qsmSrov6KbxhLdOQY4T2iQk.jpg", trailer:"j7jPnMgVG9o" },
+  { title:"Interstellar", year:"2014", poster:"https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", trailer:"zSWdZVtXT7E" },
+  { title:"Gladiator II", year:"2024", poster:"https://image.tmdb.org/t/p/w500/2cxhvwyEwRlysAmRH4iodkvo0z5.jpg", trailer:"R92OZkQHBzY" },
+  { title:"The Shawshank Redemption", year:"1994", poster:"https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg", trailer:"6hB3S9bIaco" },
+  { title:"Joker: Folie à Deux", year:"2024", poster:"https://image.tmdb.org/t/p/w500/if9VAEAolnxL8ByqVnBL1fZGWnD.jpg", trailer:"q5SfKjPGTgA" },
+  { title:"Alien: Romulus", year:"2024", poster:"https://image.tmdb.org/t/p/w500/b33nnKl1GSFbao4l3fZDDqsMx0F.jpg", trailer:"RX43eAFvH1k" },
+];
+
+// Hero slides config
+const HERO_FILMS = [
+  { title:"John Wick: Chapter 4", desc:"The world's most dangerous assassin faces his toughest challenge yet.", badge:"🔥 TOP ACTION", poster:"https://image.tmdb.org/t/p/original/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg", trailer:"qEVUtrk8_B4" },
+  { title:"Spider-Man: Across the Spider-Verse", desc:"Miles Morales embarks on an adventure across the Multiverse.", badge:"✨ ANIMATED MASTERPIECE", poster:"https://image.tmdb.org/t/p/original/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg", trailer:"shW9i6k8cB0" },
+  { title:"Barbie", desc:"She's everything. He's just Ken. A story about discovering who you really are.", badge:"🎀 TRENDING COMEDY", poster:"https://image.tmdb.org/t/p/original/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg", trailer:"pBk4NYhWNMM" },
+  { title:"Furiosa", desc:"A origin story of the iconic Furiosa before Mad Max.", badge:"🚀 EPIC SAGA", poster:"https://image.tmdb.org/t/p/original/iADOJ8Zymht2JPMUV3IOE2Z5L4m.jpg", trailer:"XJMuhwVlcaM" },
+  { title:"Inside Out 2", desc:"Growing up can be messy — especially inside your head.", badge:"💙 FAMILY FAVOURITE", poster:"https://image.tmdb.org/t/p/original/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg", trailer:"LEJHMT6Q0AY" },
+];
+
+// ==================== STATE ====================
+let customFilms = JSON.parse(localStorage.getItem('bigflix_films') || '[]');
+let currentMode = 'regular';
+let currentCatMode = 'regular';
+let currentCat = 'all';
+let currentCommentator = 'all';
+let currentCatCommentator = 'all';
+let heroIndex = 0;
+let heroTimer;
+
+// ==================== HERO SLIDESHOW ====================
+function buildHero() {
+  const ss = document.getElementById('heroSlideshow');
+  const dots = document.getElementById('heroDots');
+  HERO_FILMS.forEach((f, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'hero-slide' + (i === 0 ? ' active' : '');
+    slide.style.backgroundImage = `url('${f.poster}')`;
+    slide.innerHTML = `
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <span class="hero-badge">${f.badge}</span>
+        <div class="hero-title">${f.title}</div>
+        <div class="hero-desc">${f.desc}</div>
+        <div class="hero-btns">
+          <button class="btn-watch" onclick="watchTrailer('${f.trailer}','${f.title.replace(/'/g,"\\'")}')">
+            <i class="fas fa-play"></i> Watch Trailer
+          </button>
+          <button class="btn-info" onclick="showPage('categories')">Browse Films</button>
+        </div>
+      </div>`;
+    ss.insertBefore(slide, ss.querySelector('.hero-arrow'));
+    const dot = document.createElement('div');
+    dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goToSlide(i);
+    dots.appendChild(dot);
+  });
+  startHeroTimer();
+}
+
+function goToSlide(n) {
+  document.querySelectorAll('.hero-slide').forEach((s,i) => s.classList.toggle('active', i===n));
+  document.querySelectorAll('.hero-dot').forEach((d,i) => d.classList.toggle('active', i===n));
+  heroIndex = n;
+}
+
+function heroSlide(dir) {
+  let n = (heroIndex + dir + HERO_FILMS.length) % HERO_FILMS.length;
+  goToSlide(n);
+  resetHeroTimer();
+}
+
+function startHeroTimer() { heroTimer = setInterval(() => heroSlide(1), 5000); }
+function resetHeroTimer() { clearInterval(heroTimer); startHeroTimer(); }
+
+// ==================== RENDERING ====================
+function renderMovies(movies, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!movies.length) { el.innerHTML = '<div style="text-align:center;padding:50px;color:var(--muted);">No films found.</div>'; return; }
+  el.innerHTML = movies.map(m => {
+    const isComm = m.type === 'commentator';
+    const commName = isComm ? m.commentator : '';
+    const commEmoji = { rocky:'🥊', savimbi:'🦁', fey:'🌟', giti:'🎭', sankaragahza:'🏆' }[commName] || '';
+    return `
+    <div class="movie-card ${isComm ? 'commentator-card' : ''}" onclick="watchTrailer('${m.trailer}','${m.title.replace(/'/g,"\\'")}')">
+      ${isComm ? `<span class="comm-tag">${commEmoji} ${commName}</span>` : ''}
+      ${isNewFilm(m) ? `<span class="new-tag">NEW</span>` : ''}
+      <img class="movie-poster" src="${m.poster}" onerror="this.src='https://placehold.co/300x450/1a1a1a/white?text=${encodeURIComponent(m.title)}'">
+      <div class="movie-info">
+        <div class="movie-title">${m.title}</div>
+        <div class="movie-meta">
+          <span class="movie-year">${m.year || ''}</span>
+          <span class="movie-rating">⭐ ${m.rating || '—'}</span>
+        </div>
+        <button class="watch-btn ${isComm ? 'comm-btn-watch' : ''}" onclick="event.stopPropagation();watchTrailer('${m.trailer}','${m.title.replace(/'/g,"\\'")}')">
+          <i class="fab fa-youtube"></i> ${isComm ? '🎙️ WATCH COMMENTARY' : '▶ WATCH TRAILER'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function isNewFilm(m) {
+  return m.id && m.id.startsWith('uf_');
+}
+
+function renderMovieboxScroll(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = MOVIEBOX_FILMS.map(m => `
+      <div class="moviebox-item" onclick="watchTrailer('${m.trailer}','${m.title.replace(/'/g,"\\'")}')">
+        <img src="${m.poster}" alt="${m.title}" onerror="this.src='https://placehold.co/150x220/1a1a1a/white?text=${encodeURIComponent(m.title)}'">
+        <div class="moviebox-item-info">
+          <div class="moviebox-item-title">${m.title}</div>
+          <div class="moviebox-item-year">${m.year}</div>
+        </div>
+      </div>`).join('');
+  });
+}
+
+// ==================== MODE TOGGLE ====================
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeRegular').classList.toggle('active', mode==='regular');
+  document.getElementById('modeCommentator').classList.toggle('active', mode==='commentator');
+  document.getElementById('commentatorBar').style.display = mode==='commentator' ? 'flex' : 'none';
+  loadHome();
+}
+
+function setCatMode(mode) {
+  currentCatMode = mode;
+  document.getElementById('catModeRegular').classList.toggle('active', mode==='regular');
+  document.getElementById('catModeCommentator').classList.toggle('active', mode==='commentator');
+  document.getElementById('catCommentatorBar').style.display = mode==='commentator' ? 'flex' : 'none';
+  renderCatGrid();
+}
+
+function selectCommentator(name) {
+  currentCommentator = name;
+  document.querySelectorAll('#commentatorBar .comm-btn').forEach(b => b.classList.remove('active'));
+  event.target.closest('.comm-btn').classList.add('active');
+  loadHome();
+}
+
+function selectCatCommentator(name) {
+  currentCatCommentator = name;
+  document.querySelectorAll('#catCommentatorBar .comm-btn').forEach(b => b.classList.remove('active'));
+  event.target.closest('.comm-btn').classList.add('active');
+  renderCatGrid();
+}
+
+// ==================== CATEGORY FILTER ====================
+function selectCat(cat) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCatGrid();
+}
+
+function renderCatGrid() {
+  let films;
+  if (currentCatMode === 'commentator') {
+    films = [...COMMENTATOR_FILMS, ...customFilms.filter(f => f.type==='commentator')];
+    if (currentCatCommentator !== 'all') films = films.filter(f => f.commentator === currentCatCommentator);
+  } else {
+    films = [...ACTION_MOVIES, ...COMEDY_MOVIES, ...CARTOON_MOVIES, ...ROMANCE_MOVIES, ...customFilms.filter(f => f.type==='regular')];
+  }
+  if (currentCat !== 'all') {
+    if (currentCat === 'custom') films = customFilms.filter(f => f.category==='custom');
+    else films = films.filter(f => f.category === currentCat);
+  }
+  renderMovies(films, 'catGrid');
+}
+
+// ==================== HOME LOAD ====================
+function loadHome() {
+  let trending;
+  if (currentMode === 'commentator') {
+    trending = [...COMMENTATOR_FILMS, ...customFilms.filter(f => f.type==='commentator')];
+    if (currentCommentator !== 'all') trending = trending.filter(f => f.commentator === currentCommentator);
+  } else {
+    trending = [
+      ...ACTION_MOVIES.slice(0,3),
+      ...COMEDY_MOVIES.slice(0,2),
+      ...CARTOON_MOVIES.slice(0,2),
+      ...ROMANCE_MOVIES.slice(0,2),
+      ...customFilms.slice(0, 3)
+    ];
+  }
+  renderMovies(trending, 'homeGrid');
+}
+
+// ==================== MANAHAFILM ====================
+function loadManahafilm() {
+  const manahaFilms = customFilms.filter(f => f.manahafilm === 'yes');
+  if (manahaFilms.length === 0) {
+    document.getElementById('manahaGrid').style.display = 'none';
+    document.getElementById('manahaEmpty').style.display = 'block';
+  } else {
+    document.getElementById('manahaGrid').style.display = 'grid';
+    document.getElementById('manahaEmpty').style.display = 'none';
+    renderMovies(manahaFilms, 'manahaGrid');
+  }
+}
+
+// ==================== ADMIN / ADD FILM ====================
+document.getElementById('filmType').addEventListener('change', function() {
+  document.getElementById('commentatorField').style.display = this.value==='commentator' ? 'block' : 'none';
+});
+
+function previewPoster(url) {
+  const preview = document.getElementById('posterPreview');
+  if (url.trim()) { preview.src = url; preview.style.display = 'block'; }
+  else preview.style.display = 'none';
+}
+
+function addFilm() {
+  const title = document.getElementById('filmTitle').value.trim();
+  const year = document.getElementById('filmYear').value.trim();
+  const category = document.getElementById('filmCategory').value;
+  const rating = parseFloat(document.getElementById('filmRating').value) || 0;
+  const type = document.getElementById('filmType').value;
+  const commentator = type==='commentator' ? document.getElementById('filmCommentator').value : null;
+  const poster = document.getElementById('filmPoster').value.trim();
+  const trailer = document.getElementById('filmTrailer').value.trim();
+  const desc = document.getElementById('filmDesc').value.trim();
+  const manahafilm = document.getElementById('filmManahafilm').value;
+
+  if (!title || !poster) { showToast('⚠️ Title and Poster URL are required!', 'error'); return; }
+
+  const film = {
+    id: 'uf_' + Date.now(),
+    title, year, category, rating, type, commentator,
+    poster, trailer, desc, manahafilm
+  };
+
+  customFilms.unshift(film);
+  localStorage.setItem('bigflix_films', JSON.stringify(customFilms));
+
+  // Reset form
+  ['filmTitle','filmYear','filmRating','filmPoster','filmTrailer','filmDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('posterPreview').style.display = 'none';
+  document.getElementById('filmCategory').value = 'action';
+  document.getElementById('filmType').value = 'regular';
+  document.getElementById('filmManahafilm').value = 'no';
+  document.getElementById('commentatorField').style.display = 'none';
+
+  // Show custom cat button if we have custom films
+  if (customFilms.some(f => f.category==='custom')) document.getElementById('customCatBtn').style.display = '';
+
+  renderAdminList();
+  loadHome();
+  showToast(`✅ "${title}" added to library!`, 'success');
+}
+
+function deleteFilm(id) {
+  customFilms = customFilms.filter(f => f.id !== id);
+  localStorage.setItem('bigflix_films', JSON.stringify(customFilms));
+  renderAdminList();
+  loadHome();
+  showToast('🗑️ Film removed.', 'error');
+}
+
+function renderAdminList() {
+  const el = document.getElementById('adminFilmList');
+  document.getElementById('filmCount').textContent = customFilms.length;
+  if (!customFilms.length) {
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">No custom films added yet.</div>';
+    return;
+  }
+  el.innerHTML = customFilms.map(f => `
+    <div class="admin-film-row">
+      <img class="admin-film-poster" src="${f.poster}" onerror="this.src='https://placehold.co/45x65/1a1a1a/white?text=?'">
+      <div class="admin-film-info">
+        <div class="admin-film-title">${f.title}</div>
+        <div class="admin-film-meta">
+          ${f.year || ''} · ${f.category} · ${f.type==='commentator' ? `🎙️ ${f.commentator}` : '🎬 Regular'}
+          ${f.manahafilm==='yes' ? ' · 🌟 Manahafilm' : ''}
+        </div>
+      </div>
+      <button class="delete-btn" onclick="deleteFilm('${f.id}')"><i class="fas fa-trash"></i></button>
+    </div>`).join('');
+}
+
+// ==================== TRAILER MODAL ====================
+function watchTrailer(videoId, title) {
+  if (!videoId) return;
+  document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+  document.getElementById('trailerTitle').textContent = title;
+  document.getElementById('trailerModal').classList.add('open');
+}
+
+function closeTrailer() {
+  document.getElementById('trailerFrame').src = '';
+  document.getElementById('trailerModal').classList.remove('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('trailerModal')) closeTrailer();
+}
+
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeTrailer(); });
+
+// ==================== PAGE NAVIGATION ====================
+const pages = ['home','categories','manahafilm','admin','about'];
+function showPage(name) {
+  pages.forEach(p => {
+    document.getElementById(p+'Page').classList.toggle('active', p===name);
+  });
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById('nav' + name.charAt(0).toUpperCase() + name.slice(1));
+  if (activeBtn) activeBtn.classList.add('active');
+
+  if (name === 'manahafilm') loadManahafilm();
+  if (name === 'admin') renderAdminList();
+  window.scrollTo(0,0);
+}
+
+// ==================== TOAST ====================
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  buildHero();
+  loadHome();
+  renderCatGrid();
+  renderMovieboxScroll(['movieboxScroll','manahaMovieboxScroll']);
+  renderAdminList();
+  if (customFilms.some(f => f.category==='custom')) document.getElementById('customCatBtn').style.display = '';
+});
+</script>
+</body>
+</html>y
